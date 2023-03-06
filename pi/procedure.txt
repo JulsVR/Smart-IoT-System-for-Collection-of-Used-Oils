@@ -1,0 +1,7 @@
+http POST request sent from esp to raspberry pi
+
+GOLANG script to read POST request, extract data and insert into database
+
+MQTT message with new db entry sent to cloud
+
+
