@@ -1,0 +1,11 @@
+package main
+
+import (
+"fmt"
+"log"
+"ne
+
+func main(){
+http.HandleFunc("/data", handler)
+log.fatal
+}
