@@ -7,44 +7,44 @@
 #include <HTTPClient.h>
 #include "DHT.h"
 #define DHTPIN 14 // GPIO14
-#define DHTTYPE DHT22 // DHT22 (AM2302)
 #define ONE_WIRE_BUS 4
+DHT dht(DHTPIN, DHTTYPE);
+#define DHTTYPE DHT22 // DHT22 (AM2302)
+
+volatile double waterflow;
+volatile byte pulseCount = 0; 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-DHT dht(DHTPIN, DHTTYPE);
-volatile double waterflow;
-int flowSensorPin = 2;  // set the flow sensor input pin
-byte sensorInterrupt = digitalPinToInterrupt(2); 
-unsigned long pulseDuration; // variable to store the pulse duration
-volatile byte pulseCount = 0; 
-const byte ROWS = 4; // Define the number of rows on the keypad
-const byte COLS = 3; // Define the number of columns on the keypad
-char keys[ROWS][COLS] = { // Matrix defining character to return for each key
-  {'1','2','3'},
-  {'4','5','6'},
-  {'7','8','9'},
-  {'*','0','#'}
-};
 
-byte rowPins[ROWS] = {33,38,37,35}; 
-byte colPins[COLS] = {34,26,36}; 
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
-const char* ssid = "ufp";
-const char* password = "";
+int flowSensorPin = 2;   
 unsigned long lastTime = 0;
 unsigned long timerDelay = 1000;
-const char* serverName = "http://10.10.43.113:8080/sensor-data";
-
-
-/*
-START OF THE LIQUID AND TEMPERATURE VALUES , JUST BASE VALUES
-*/
+unsigned long pulseDuration; 
 
 float water = 90.0;
 float food_oil = 10.0;
 float car_oil = 0.0;
 float before_temperature = 20.0;
 float before_values[2] = {0.0,0.0};
+
+const byte ROWS = 4; 
+const byte COLS = 3;
+const char* ssid = "ufp";
+const char* password = "";
+const char* serverName = "http://10.10.43.113:8080/sensor-data";
+
+byte rowPins[ROWS] = {33,38,37,35}; 
+byte colPins[COLS] = {34,26,36}; 
+byte sensorInterrupt = digitalPinToInterrupt(2);
+
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+char keys[ROWS][COLS] = { 
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+
 
 
 void pulseCounter() {
@@ -193,7 +193,7 @@ void keypad_func(){
       before_temperature += 0.5;
       break;
     case '5':
-      before_temperature += 0.5;
+      before_temperature -= 0.5;
       break;
     case '*':
       sync();
