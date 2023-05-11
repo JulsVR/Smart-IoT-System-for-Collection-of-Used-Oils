@@ -11,12 +11,12 @@
 DHT dht(DHTPIN, DHTTYPE);
 #define DHTTYPE DHT22 // DHT22 (AM2302)
 
-volatile double waterflow;
-volatile byte pulseCount = 0; 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
+
 int flowSensorPin = 2;   
+volatile double waterflow;
 unsigned long lastTime = 0;
 unsigned long timerDelay = 1000;
 unsigned long pulseDuration; 
@@ -37,13 +37,14 @@ byte rowPins[ROWS] = {33,38,37,35};
 byte colPins[COLS] = {34,26,36}; 
 byte sensorInterrupt = digitalPinToInterrupt(2);
 
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 char keys[ROWS][COLS] = { 
   {'1','2','3'},
   {'4','5','6'},
   {'7','8','9'},
   {'*','0','#'}
 };
+
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 
 
@@ -61,6 +62,7 @@ void setup() {
   waterflow = 0;
   attachInterrupt(sensorInterrupt, pulseCounter, RISING);
 
+  /*
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
   while(WiFi.status() != WL_CONNECTED) {
@@ -73,6 +75,8 @@ void setup() {
   Serial.println("Timer set to 1 seconds (timerDelay variable), it will take 1 seconds before publishing the first reading.");
 
   bool status;
+  */
+  
 }
 
 void printTime() {
@@ -86,7 +90,6 @@ void printTime() {
 void dht22() {
   float temperature = dht.readTemperature();
   float humidity = dht.readHumidity();
-
   Serial.printf("Temperature: %.2f °C, Humidity: %.2f %%", temperature, humidity);
 
 }
@@ -94,9 +97,7 @@ void dht22() {
 
 void ds18b20() {
   sensors.requestTemperatures(); 
-
   float tempC = sensors.getTempCByIndex(0);
-
   Serial.printf("   ---   Fluid Temperature: %.2f (°C)", tempC);
 }
 
@@ -106,48 +107,13 @@ void sen0189() {
   Serial.printf("   ---   Turbidity: %.2f (V)", voltage);
 }
 
-void sen0217(){
-  //pulseDuration = pulseIn(flowSensorPin, HIGH); // measure the pulse duration
-  //float flowRate = 7.5 / pulseDuration; // calculate the flow rate in liters per minute (7.5 is a calibration factor)
-  Serial.printf("   ---   Water Flow: %.2f (L/min)\n", waterflow);
+void sen0217(){ //Testing
+  pulseDuration = pulseIn(flowSensorPin, HIGH);
+  float flowRate = 7.5 / pulseDuration;
+  float x = pulseIn(flowSensorPin, LOW);
+  Serial.printf("   ---   PulseIn: %.2f\tFlow Rate: %.2f (L/min)\tTotal Flow: %.2f (mL)\t\n", x, flowRate, waterFlow*10);
 }
 
-void get_fluxo()
-{
-  //byte sensorInterrupt = digitalPinToInterrupt(2);
-  //char fluxo[50] = "";
-  unsigned long oldTime = 0;
-  Serial.println("Pronto para ler o fluxo: ");
-  detachInterrupt(sensorInterrupt);   
-  Serial.println("Coloque o liquido: ");
-  for (;;)
-  {
-    for(int i = 1; i>0; i--)
-    {
-      Serial.println(i);
-    }
-    int calibrationFactor = 4.0;
-    waterflow = ((millis() - oldTime) * pulseCount) / calibrationFactor;
-    oldTime = millis();
-        
-    unsigned int frac;
-  
-    Serial.print(waterflow);
-    Serial.println();
-   
-    // Reset the pulse counter so we can start incrementing again
-    pulseCount = 0;
-    
-    // Enable the interrupt again now that we've finished sending output
-    attachInterrupt(sensorInterrupt, pulseCounter, FALLING);
-    if (waterflow == 0)
-    {
-      break;
-    }
-    break;
-  }
-  
-}
 
 void sync(){
   printTime();
@@ -155,7 +121,6 @@ void sync(){
   ds18b20();
   sen0189();
   sen0217();
-  //get_fluxo();
   Serial.println();
   delay(1000);
 }

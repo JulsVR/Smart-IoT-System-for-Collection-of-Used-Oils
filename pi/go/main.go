@@ -10,8 +10,18 @@ import (
 )
 
 type SensorData struct {
-	Temperature float64 `json:"temperature"`
-	Humidity    float64 `json:"humidity"`
+	//sensor values
+	Out_Temperature float64 `json:"out_temperature"` //dht22
+	Humidity float64 `json:"humidity"` //dht22
+	Temperature float64 `json:"temperature"` //ds18b20
+	Flow float64 `json:"flow"` //yf-s201
+	Turbidity float64 `json:"turbidity"` 
+	//static values inserted by keypad
+	Before_Temperature float64 `json:"before_temperature"` //cooking thermometer
+	Water float64 `json:"water"`
+	Food_Oil float64 `json:"food_oil"`
+	Engine_Oil float64 `json:"engine_oil"`
+	Oil_brand string `json:"oil_brand"`
 }
 
 func main() {
