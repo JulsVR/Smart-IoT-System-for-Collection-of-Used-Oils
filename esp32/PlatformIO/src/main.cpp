@@ -24,6 +24,7 @@ unsigned long pulseDuration;
 float water = 90.0;
 float food_oil = 10.0;
 float car_oil = 0.0;
+float calibrationFactor = 1.44;
 float before_temperature = 20.0;
 float before_values[2] = {0.0,0.0};
 
@@ -107,11 +108,12 @@ void sen0189() {
   Serial.printf("   ---   Turbidity: %.2f (V)", voltage);
 }
 
-void sen0217(){ //Testing
+void yf_s201(){
   pulseDuration = pulseIn(flowSensorPin, HIGH);
   float flowRate = 7.5 / pulseDuration;
   float x = pulseIn(flowSensorPin, LOW);
-  Serial.printf("   ---   PulseIn: %.2f\tFlow Rate: %.2f (L/min)\tTotal Flow: %.2f (mL)\t\n", x, flowRate, waterFlow*10);
+  float totalFlow = waterFlow * 1000 * calibrationFactor;
+  Serial.printf("PulseIn: %.2f\tFlow Rate: %.2f (L/min)\tTotal Flow: %.0f (mL)\t\n", x, flowRate, totalFlow);
 }
 
 
@@ -120,7 +122,7 @@ void sync(){
   dht22();
   ds18b20();
   sen0189();
-  sen0217();
+  yf_s201();
   Serial.println();
   delay(1000);
 }
