@@ -8,12 +8,14 @@
 #include "DHT.h"
 #define DHTPIN 14 // GPIO14
 #define ONE_WIRE_BUS 4
-DHT dht(DHTPIN, DHTTYPE);
 #define DHTTYPE DHT22 // DHT22 (AM2302)
+DHT dht(DHTPIN, DHTTYPE);
+
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
+boolean reading = false;
 
 int flowSensorPin = 2;   
 volatile double waterflow;
@@ -21,12 +23,13 @@ unsigned long lastTime = 0;
 unsigned long timerDelay = 1000;
 unsigned long pulseDuration; 
 
-float water = 90.0;
-float food_oil = 10.0;
-float car_oil = 0.0;
-float calibrationFactor = 1.44;
+unsigned short water = 90.0;
+unsigned short food_oil = 10.0;
+unsigned short car_oil = 0.0;
+//float calibrationFactor = 1.44;
+float calibrationFactor =  0.884;
 float before_temperature = 20.0;
-float before_values[2] = {0.0,0.0};
+unsigned short before_values[2] = {0,0};
 
 const byte ROWS = 4; 
 const byte COLS = 3;
@@ -34,8 +37,8 @@ const char* ssid = "ufp";
 const char* password = "";
 const char* serverName = "http://10.10.43.113:8080/sensor-data";
 
-byte rowPins[ROWS] = {33,38,37,35}; 
-byte colPins[COLS] = {34,26,36}; 
+byte rowPins[ROWS] = {22,25,33,19}; 
+byte colPins[COLS] = {21,23,32}; 
 byte sensorInterrupt = digitalPinToInterrupt(2);
 
 char keys[ROWS][COLS] = { 
@@ -58,8 +61,8 @@ void setup() {
   sensors.begin();
   dht.begin();
   //  gpio_install_isr_service(0);
-  pinMode(flowSensorPin, INPUT);
-  digitalWrite(flowSensorPin, HIGH);
+  //pinMode(flowSensorPin, INPUT);
+  //digitalWrite(flowSensorPin, HIGH);
   waterflow = 0;
   attachInterrupt(sensorInterrupt, pulseCounter, RISING);
 
@@ -112,7 +115,7 @@ void yf_s201(){
   pulseDuration = pulseIn(flowSensorPin, HIGH);
   float flowRate = 7.5 / pulseDuration;
   float x = pulseIn(flowSensorPin, LOW);
-  float totalFlow = waterFlow * 1000 * calibrationFactor;
+  float totalFlow = waterflow * 1000 * calibrationFactor;
   Serial.printf("PulseIn: %.2f\tFlow Rate: %.2f (L/min)\tTotal Flow: %.0f (mL)\t\n", x, flowRate, totalFlow);
 }
 
@@ -129,27 +132,30 @@ void sync(){
 
 void keypad_func(){
   char key = keypad.getKey();
-  Serial.printf("%f, %f, %f, %f\n",water,food_oil,car_oil,before_temperature);
+  //Serial.printf("%hu, %hu, %hu, %f\n",water,food_oil,car_oil,before_temperature);
   switch(key){
     case '1':
+      Serial.printf("key pressed : %c\n",key);
       if (water == 0 && food_oil == 0){
         water = before_values[0]; food_oil = before_values[1];
       }
-      water += 0.5;
-      food_oil -= 0.5;
+      water += 1;
+      food_oil -= 1;
       if(car_oil!=0)
         car_oil=0;
       break;
     case '2':
+      Serial.printf("key pressed : %c\n",key);
       if (water == 0 && food_oil == 0){
         water = before_values[0]; food_oil = before_values[1];
       }
-      water -= 0.5;
-      food_oil += 0.5;
+      water -= 1;
+      food_oil += 1;
       if(car_oil!=0)
         car_oil=0;
       break;
     case '3':
+      Serial.printf("key pressed : %c\n",key);
       before_values[0] = water;
       before_values[1] = food_oil;
       water = 0.0;
@@ -157,15 +163,23 @@ void keypad_func(){
       car_oil = 100.0;
       break;
     case '4':
+      Serial.printf("key pressed : %c\n",key);
       before_temperature += 0.5;
       break;
     case '5':
+      Serial.printf("key pressed : %c\n",key);
       before_temperature -= 0.5;
       break;
     case '*':
-      sync();
+      reading = true;
+      Serial.printf("key pressed : %c , reading -> %d\n",key,reading);
       break;
-    default: break;
+    case '#':
+      reading = false;
+      Serial.printf("key pressed : %c , reading -> %d\n",key,reading);
+      break;
+    default:
+      break;
   }
 }
 void http_post(){
@@ -195,8 +209,14 @@ void http_post(){
 }
 
 void loop() {
-  keypad_func();
+  //keypad_func();
   //http_post();
+  //yf_s201();
+  if(reading==true){
+    sync();
+    keypad_func();
+  }
+  keypad_func();
 }
 
 
