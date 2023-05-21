@@ -27,6 +27,7 @@ unsigned short water = 90.0;
 unsigned short food_oil = 10.0;
 unsigned short car_oil = 0.0;
 //float calibrationFactor = 1.44;
+float lastTotalFlow = 0.0;
 float calibrationFactor =  0.884;
 float before_temperature = 20.0;
 unsigned short before_values[2] = {0,0};
@@ -112,11 +113,31 @@ void sen0189() {
 }
 
 void yf_s201(){
-  pulseDuration = pulseIn(flowSensorPin, HIGH);
-  float flowRate = 7.5 / pulseDuration;
-  float x = pulseIn(flowSensorPin, LOW);
+  static unsigned long startTime = 0;    // Variable to store the start time
+  static unsigned long elapsedTime = 0;
+  unsigned long long elapsedSeconds = 0;
+  float fixedflowRate = 0;  
+  
+  //float flowRate = waterflow * calibrationFactor * 60.0;
   float totalFlow = waterflow * 1000 * calibrationFactor;
-  Serial.printf("PulseIn: %.2f\tFlow Rate: %.2f (L/min)\tTotal Flow: %.0f (mL)\t\n", x, flowRate, totalFlow);
+  
+
+    if (totalFlow != lastTotalFlow) {
+    if (startTime == 0) {
+      // Start the timer if it hasn't started already
+      startTime = millis();
+    } else {
+      // Calculate the elapsed time if the timer is already running
+      unsigned long currentTime = millis();
+      elapsedTime += currentTime - startTime;
+      startTime = currentTime;
+    }
+    lastTotalFlow = totalFlow;
+  }
+  elapsedSeconds = elapsedTime / 1000;
+  fixedflowRate = ((totalFlow / elapsedSeconds)  * 60.0)/1000.0;
+
+  Serial.printf("Flow Rate: %.2f (L/min)\tTotal Flow: %.0f (mL)\tTime: %lu(s)\n", fixedflowRate, totalFlow, elapsedSeconds);
 }
 
 
@@ -217,6 +238,7 @@ void loop() {
     keypad_func();
   }
   keypad_func();
+  
 }
 
 
