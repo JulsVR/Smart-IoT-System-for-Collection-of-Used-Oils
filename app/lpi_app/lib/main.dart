@@ -83,36 +83,41 @@ class PercentagesMenu extends StatelessWidget {
         title: Text('Percentagens'),
         backgroundColor: Color.fromARGB(255, 14, 136, 45),
       ),
-      body: ListView.builder(
-        itemCount: percentages.length,
-        itemBuilder: (context, index) {
-          return OutlinedButton(
+      body: GridView.count(
+        crossAxisCount: 2,
+        padding: EdgeInsets.all(16),
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        children: percentages.map((percentage) {
+          return SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
               onPressed: () {
-                double selectedWater =
-                    double.parse(percentages[index].split('%')[0]);
+                double selectedWater = double.parse(percentage.split('%')[0]);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => TemperatureMenu(
-                            water: selectedWater,
-                          )),
+                    builder: (context) => TemperatureMenu(
+                      water: selectedWater,
+                    ),
+                  ),
                 );
               },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.black,
-                side: BorderSide(color: Colors.green, width: 4),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 14, 136, 45),
+                padding: EdgeInsets.all(20),
+                textStyle: TextStyle(fontSize: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                      child: Text(
-                    percentages[index],
-                    textAlign: TextAlign.center,
-                  ))
-                ],
-              ));
-        },
+              child: Text(
+                percentage,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -137,38 +142,44 @@ class TemperatureMenu extends StatelessWidget {
         title: Text('Temperaturas'),
         backgroundColor: Color.fromARGB(255, 14, 136, 45),
       ),
-      body: ListView.builder(
-        itemCount: temperatures.length,
-        itemBuilder: (context, index) {
-          return OutlinedButton(
+      body: GridView.count(
+        crossAxisCount: 2,
+        padding: EdgeInsets.all(16),
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        children: temperatures.map((temperature) {
+          return SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
               onPressed: () {
                 double selectedTemperature =
-                    double.parse(temperatures[index].split('%')[0]);
+                    double.parse(temperature.split('%')[0]);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => OAUDetails(
-                            temp_x: selectedTemperature,
-                            water_x: water!,
-                            food_oil_x: 100.0 - water!,
-                          )),
+                    builder: (context) => OAUDetails(
+                      temp_x: selectedTemperature,
+                      water_x: water!,
+                      food_oil_x: 100.0 - water!,
+                    ),
+                  ),
                 );
               },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.black,
-                side: BorderSide(color: Colors.green, width: 4),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 14, 136, 45),
+                padding: EdgeInsets.all(20),
+                textStyle: TextStyle(fontSize: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                      child: Text(
-                    temperatures[index],
-                    textAlign: TextAlign.center,
-                  ))
-                ],
-              ));
-        },
+              child: Text(
+                temperature,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -188,9 +199,9 @@ class OAUGraph extends State<OAUDetails> {
   List<OAUData> getChartData() {
     final List<OAUData> chartData = [
       //OAUData('Temperature', widget.temp_x),
-      OAUData('Water', widget.water_x),
-      OAUData('Food Oil', widget.food_oil_x),
-      OAUData('Impurities', widget.impurities_x),
+      OAUData('Água', widget.water_x),
+      OAUData('Óleo Alimentar', widget.food_oil_x),
+      OAUData('Impurezas', widget.impurities_x),
     ];
     //chartData.removeWhere((data) => data.value == 0.0);
     return chartData;
@@ -210,7 +221,7 @@ class OAUGraph extends State<OAUDetails> {
         appBar: AppBar(title: Text('OAU')),
         body: SfCircularChart(
           title: ChartTitle(
-            text: 'Temperature: ${widget.temp_x.toString()}ºC',
+            text: 'Temperatura: ${widget.temp_x.toString()}ºC',
           ),
           legend: Legend(
             isVisible: true,
