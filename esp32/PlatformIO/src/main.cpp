@@ -7,9 +7,9 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "DHT.h"
-#define DHTPIN 14 // GPIO14
+#define DHTPIN 14 
 #define ONE_WIRE_BUS 5 
-#define DHTTYPE DHT22 // DHT22 (AM2302)
+#define DHTTYPE DHT22 
 DynamicJsonDocument json(256);
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -37,9 +37,12 @@ int brand_atual = 0;
 
 const byte ROWS = 4; 
 const byte COLS = 3;
+
 const char* ssid = "ufp";
 const char* password = "";
-const char* serverName = "http://192.168.1.87:8080/sensor-data";
+
+const char* serverName = "http://RASPI_IP_HERE:8080/sensor-data";
+
 
 byte rowPins[ROWS] = {22,25,33,19}; 
 byte colPins[COLS] = {21,23,32}; 
@@ -60,8 +63,8 @@ float humidity;
 float liq_temperature;
 float turbidity;
 float before_temperature = 20.0;
-unsigned short water = 90;
-unsigned short food_oil = 10;
+unsigned short water = 10;
+unsigned short food_oil = 90;
 unsigned short engine_oil = 0;
 const char* oil_brand = NULL;
 /////////////////////////
@@ -74,22 +77,19 @@ void setup() {
   Serial.begin(9600);
   sensors.begin();
   dht.begin();
-  // gpio_install_isr_service(0);
-  //pinMode(flowSensorPin, INPUT);
-  //digitalWrite(flowSensorPin, HIGH);
   waterflow = 0;
   attachInterrupt(sensorInterrupt, pulseCounter, RISING);
 
   
   WiFi.begin(ssid, password);
-  Serial.println("Connecting");
+  Serial.printf("Connecting to %s", ssid);
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.printf("\nSucessfully connected to Wifi %s.\n", ssid);
   bool status;
-  
+
   
 }
 
@@ -100,14 +100,12 @@ float quicksortPartition(float arr[], int low, int high) {
   for (int j = low; j <= high - 1; j++) {
     if (arr[j] <= pivot) {
       i++;
-      // Swap arr[i] and arr[j]
       float temp = arr[i];
       arr[i] = arr[j];
       arr[j] = temp;
     }
   }
 
-  // Swap arr[i + 1] and arr[high] (pivot)
   float temp = arr[i + 1];
   arr[i + 1] = arr[high];
   arr[high] = temp;
@@ -158,7 +156,7 @@ void ds18b20() {
 
 void sen0189() {
   int sensorValue = analogRead(39);
-  turbidity = sensorValue * (5.0 / 1024.0);
+  turbidity = (sensorValue * (5.0 / 1024.0))/4;
   Serial.printf("   ---   Turbidity: %.2f (V)", turbidity);
 }
 
@@ -203,7 +201,6 @@ void keypad_func(){
   char key = keypad.getKey();
   switch(key){
     case '1':
-      Serial.printf("key pressed : %c\n",key);
       if (water == 0 && food_oil == 0){
         water = before_values[0]; food_oil = before_values[1];
       }
@@ -211,9 +208,9 @@ void keypad_func(){
       food_oil -= 1;
       if(engine_oil!=0)
         engine_oil=0;
+      Serial.printf("key : %c , water incremeted to %d , oil decremented to %d\n",key,water,food_oil);
       break;
     case '2':
-      Serial.printf("key pressed : %c\n",key);
       if (water == 0 && food_oil == 0){
         water = before_values[0]; food_oil = before_values[1];
       }
@@ -221,9 +218,10 @@ void keypad_func(){
       food_oil += 1;
       if(engine_oil!=0)
         engine_oil=0;
+      Serial.printf("key : %c , oil incremeted to %d , water decremented to %d\n",key,food_oil,water);
       break;
     case '3':
-      Serial.printf("key pressed : %c\n",key);
+      Serial.printf("key : %c , engine_oil incremeted to 100\n",key);
       before_values[0] = water;
       before_values[1] = food_oil;
       water = 0.0;
@@ -231,28 +229,27 @@ void keypad_func(){
       engine_oil = 100.0;
       break;
     case '4':
-      Serial.printf("key pressed : %c\n",key);
       before_temperature += 0.5;
+      Serial.printf("key : %c  , temp INCREASED by 0.5 to -> %.2f\n",key,before_temperature);
       break;
     case '5':
-      Serial.printf("key pressed : %c\n",key);
       before_temperature -= 0.5;
+      Serial.printf("key : %c  , temp DECREASED by 0.5 to -> %.2f\n",key,before_temperature);
       break;
     case '6':
-      Serial.printf("key pressed : %c\n",key);
       brand_atual++;
       if(brand_atual > 10)
         brand_atual = 0;
       oil_brand = brands[brand_atual];
-      Serial.printf("Oil brand = %s\n",oil_brand);
+      Serial.printf("key : %c , new oil brand is -> %s\n",key,oil_brand);
       break;
     case '*':
       reading = true;
-      Serial.printf("key pressed : %c , reading -> %d\n",key,reading);
+      Serial.printf("key : %c , START READING\n", key);
       break;
     case '#':
       reading = false;
-      Serial.printf("key pressed : %c , reading -> %d\n",key,reading);
+      Serial.printf("key : %c , STOP READING, RESET VALUES\n", key);
       break;
     default:
       break;
@@ -287,7 +284,6 @@ void http_post(){
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
           
-        // Free resources
         http.end();
       }
       else {

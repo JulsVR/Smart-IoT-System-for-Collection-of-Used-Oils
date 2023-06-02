@@ -156,11 +156,11 @@ class PercentagesMenu extends StatelessWidget {
 
 class TemperatureMenu extends StatelessWidget {
   final List<String> temperatures = [
-    '20% ºC',
-    '25% ºC',
-    '30% ºC',
-    '35% ºC',
-    '40% ºC',
+    '20 ºC',
+    '25 ºC',
+    '30 ºC',
+    '35 ºC',
+    '40 ºC',
   ];
   double? water;
 
@@ -184,7 +184,7 @@ class TemperatureMenu extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 double selectedTemperature =
-                    double.parse(temperature.split('%')[0]);
+                    double.parse(temperature.split('ºC')[0]);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
